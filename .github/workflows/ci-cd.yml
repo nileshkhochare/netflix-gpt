@@ -52,10 +52,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy
+       - name: Deploy
         env:
-          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-south-1
         run: |
-          # Add your deployment commands here, for example:
-          # Deploy to AWS S3
-          aws s3 sync build/ s3://your-bucket-name
+          npm install -g aws-cli
+          aws s3 sync build/ s3://react-netflix-gpt --delete
+          aws s3 website s3://react-netflix-gpt --index-document index.html --error-document index.html
