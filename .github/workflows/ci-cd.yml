@@ -97,8 +97,8 @@ jobs:
             - Description of changes in this release.
           draft: false
           prerelease: false
-          
-        - name: Upload build directory as release asset
+
+      - name: Upload build directory as release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
