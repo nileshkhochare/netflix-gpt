@@ -18,7 +18,7 @@ const Login = () => {
 
       <form className="p-12 bg-black absolute w-3/12 my-24 mx-auto right-0 left-0 text-white bg-opacity-80">
         <h1 className="text-3xl font-bold py-4">
-          {!isSigninForm ? "Log In" : "Sign Up"}
+          {!isSigninForm ? "Sign In" : "Sign Up"}
         </h1>
         {isSigninForm && (
           <input
