@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -40,6 +42,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -65,12 +69,15 @@ jobs:
       - name: Bump Version and Tag
         id: tag_version
         run: |
+          # Fetch all tags
+          git fetch --tags
+
           # Get the current version from the latest tag or default to 1.0.0
-          VERSION=$(git describe --tags --abbrev=0 || echo "1.0.0")
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
           echo "Current version: $VERSION"
 
           # Increment the version number
-          VERSION_PARTS=(${VERSION//./ })
+          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
           MAJOR=${VERSION_PARTS[0]}
           MINOR=${VERSION_PARTS[1]}
           PATCH=${VERSION_PARTS[2]}
@@ -101,6 +108,9 @@ jobs:
             - Description of changes in this release.
           draft: false
           prerelease: false
+
+      - name: Zip build directory
+        run: zip -r build.zip build
 
       - name: Upload build directory as release asset
         uses: actions/upload-release-asset@v1
