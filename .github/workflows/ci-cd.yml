@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -40,6 +42,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -65,20 +69,27 @@ jobs:
       - name: Bump Version and Tag
         id: tag_version
         run: |
-          # Get the current version from the latest tag
-          VERSION=$(git describe --tags --abbrev=0 || echo "1.0.0")
+          # Fetch all tags
+          git fetch --tags
+
+          # Get the current version from the latest tag or default to 1.0.0
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
+          echo "Current version: $VERSION"
 
           # Increment the version number
-          VERSION_PARTS=(${VERSION//./ })
+          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
           MAJOR=${VERSION_PARTS[0]}
           MINOR=${VERSION_PARTS[1]}
           PATCH=${VERSION_PARTS[2]}
           PATCH=$((PATCH+1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version: $NEW_VERSION"
 
-          # Create a new tag for the new version
+          # Configure Git user for the action
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+          # Create a new tag for the new version
           git tag $NEW_VERSION
           git push origin $NEW_VERSION
 
@@ -97,3 +108,16 @@ jobs:
             - Description of changes in this release.
           draft: false
           prerelease: false
+
+      - name: Zip build directory
+        run: zip -r build.zip build
+
+      - name: Upload build directory as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build.zip
+          asset_name: build.zip
+          asset_content_type: application/zip
