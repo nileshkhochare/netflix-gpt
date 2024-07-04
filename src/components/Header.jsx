@@ -23,6 +23,7 @@ const Header = () => {
       }
     });
     return () => unsubscribe();
+    // eslint-disable-next-line
   }, []);
 
   const handleSignout = (e) => {
