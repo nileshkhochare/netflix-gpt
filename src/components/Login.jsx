@@ -1,11 +1,59 @@
 import React, { useState } from "react";
 import Header from "./Header";
+import { useSelector } from "react-redux";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
+import { auth } from "../utils/firebase";
 
 const Login = () => {
+  const user = useSelector((state) => state.user);
+
   const [isSigninForm, setIsSignInForm] = useState(false);
+  const [name, setName] = useState(undefined);
+  const [email, setEmail] = useState(undefined);
+  const [password, setPassword] = useState(undefined);
+
   const toggleSignInForm = () => {
     setIsSignInForm(!isSigninForm);
   };
+
+  const handleSigninSignup = (event) => {
+    event.preventDefault();
+    console.log(isSigninForm);
+    if (isSigninForm && name && email && password) {
+      console.log(name, email, password);
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode, errorMessage);
+        });
+    } else if (!isSigninForm && email && password) {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode, errorMessage);
+        });
+    }
+  };
+
+  if (user) {
+    return "Loading";
+  }
   return (
     <div>
       <Header />
@@ -16,28 +64,37 @@ const Login = () => {
         />
       </div>
 
-      <form className="p-12 bg-black absolute w-3/12 my-24 mx-auto right-0 left-0 text-white bg-opacity-80">
+      <form
+        className="p-12 bg-black absolute w-3/12 my-24 mx-auto right-0 left-0 text-white bg-opacity-80"
+        onSubmit={(e) => handleSigninSignup(e)}
+      >
         <h1 className="text-3xl font-bold py-4">
           {!isSigninForm ? "Sign In" : "Sign Up"}
         </h1>
         {isSigninForm && (
           <input
             type="text"
+            name="name"
             placeholder="Full Name"
             className="p-2 my-4 w-full bg-gray-700"
+            onChange={(e) => setName(e.target.value)}
           />
         )}
         <input
           type="text"
+          name="email"
           placeholder="Email Address"
           className="p-2 my-4 w-full bg-gray-700"
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="text"
+          name="password"
           placeholder="Password"
           className="p-2 my-4 w-full bg-gray-700"
+          onChange={(e) => setPassword(e.target.value)}
         />
-        <button className="p-4 my-6 bg-red-600 w-full rounded-lg">
+        <button type="submit" className="p-4 my-6 bg-red-600 w-full rounded-lg">
           {!isSigninForm ? "Sign In" : "Sign Up"}
         </button>
         <p className="cursor-pointer" onClick={toggleSignInForm}>
